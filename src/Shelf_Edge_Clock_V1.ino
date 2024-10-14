@@ -60,6 +60,12 @@ DateTime MyDateAndTime;
 #define LEDCLOCK_COUNT 216
 #define LEDDOWNLIGHT_COUNT 12
 
+//  These are the digit offsets, going from right (minutes) to left (hours)
+#define DIGIT_1 0 // Lower Minute
+#define DIGIT_2 63 // Upper Minute
+#define DIGIT_3 126 // Lower Hour 
+#define DIGIT_4 189 // Upper Hour
+
 //(red * 65536) + (green * 256) + blue ->for 32-bit merged colour value so
 //16777215 equals white
 // or 3 hex byte 00 -> ff for RGB eg 0x123456 for red=12(hex) green=34(hex), and
@@ -190,12 +196,12 @@ void displayTheTime() {
   int firstMinuteDigit =
       MyDateAndTime.Minute %
       10; // work out the value of the first digit and then display it
-  displayNumber(firstMinuteDigit, 0, clockMinuteColour);
+  displayNumber(firstMinuteDigit, DIGIT_1, clockMinuteColour);
 
   int secondMinuteDigit =
       floor(MyDateAndTime.Minute /
             10); // work out the value for the second digit and then display it
-  displayNumber(secondMinuteDigit, 63, clockMinuteColour);
+  displayNumber(secondMinuteDigit, DIGIT_2, clockMinuteColour);
 
   int firstHourDigit =
       MyDateAndTime
@@ -211,7 +217,7 @@ void displayTheTime() {
   //  }
 
   firstHourDigit = firstHourDigit % 10;
-  displayNumber(firstHourDigit, 126, clockHourColour);
+  displayNumber(firstHourDigit, DIGIT_3, clockHourColour);
 
   int secondHourDigit =
       MyDateAndTime
@@ -227,7 +233,7 @@ void displayTheTime() {
     secondHourDigit = secondHourDigit - 12;
   }
   if (secondHourDigit > 9) {
-    stripClock.fill(clockHourColour, 189, 18);
+    stripClock.fill(clockHourColour, DIGIT_4, 18);
   }
 }
 
