@@ -40,15 +40,15 @@ FACEBOOK: https://www.facebook.com/diymachines/
 
 */
 
-#include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-#endif
-
 #include <DS3231_Simple.h>
 DS3231_Simple Clock;
 
 // Create a variable to hold the time data
-DateTime MyDateAndTime;
+DateTime gDateTime;
+
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#endif
 
 // Which pin on the Arduino is connected to the NeoPixels?
 #define LEDCLOCK_PIN 6
@@ -121,14 +121,16 @@ void setup() {
 void loop() {
 
   // read the time
-  readTheTime();
+  DateTime lDateTime = Clock.read();
 
-  // display the time on the LEDs
-  displayTheTime();
+  if (gDateTime.Minute != lDateTime.Minute || gDateTime.Hour != lDateTime.Hour) {
+      gDateTime = lDateTime;
+      printTime(gDateTime);
+      displayTheTime(gDateTime);
+  }
 
   // Record a reading from the light sensor and add it to the array
-  readings[readIndex] = analogRead(
-      A0); // get an average light level from previouse set of samples
+  readings[readIndex] = analogRead(A0); // get an average light level from previouse set of samples
   Serial.print("Light sensor value added to array = ");
   Serial.println(readings[readIndex]);
   readIndex = readIndex + 1; // advance to the next position in the array:
@@ -169,42 +171,38 @@ void loop() {
   delay(5000); // this 5 second delay to slow things down during testing
 }
 
-void readTheTime() {
-  // Ask the clock for the data.
-  MyDateAndTime = Clock.read();
-
-  // And use it
+void printTime(DateTime dateTime) {
   Serial.println("");
   Serial.print("Time is: ");
-  Serial.print(MyDateAndTime.Hour);
+  Serial.print(dateTime.Hour);
   Serial.print(":");
-  Serial.print(MyDateAndTime.Minute);
+  Serial.print(dateTime.Minute);
   Serial.print(":");
-  Serial.println(MyDateAndTime.Second);
+  Serial.println(dateTime.Second);
   Serial.print("Date is: 20");
-  Serial.print(MyDateAndTime.Year);
+  Serial.print(dateTime.Year);
   Serial.print(":");
-  Serial.print(MyDateAndTime.Month);
+  Serial.print(dateTime.Month);
   Serial.print(":");
-  Serial.println(MyDateAndTime.Day);
+  Serial.println(dateTime.Day);
 }
 
-void displayTheTime() {
+void displayTheTime(DateTime dateTime) {
 
   stripClock.clear(); // clear the clock face
 
   int firstMinuteDigit =
-      MyDateAndTime.Minute %
+      dateTime.Minute %
       10; // work out the value of the first digit and then display it
   displayNumber(firstMinuteDigit, DIGIT_1, clockMinuteColour);
 
   int secondMinuteDigit =
-      floor(MyDateAndTime.Minute /
+      floor(dateTime.Minute /
             10); // work out the value for the second digit and then display it
   displayNumber(secondMinuteDigit, DIGIT_2, clockMinuteColour);
 
   int firstHourDigit =
-      MyDateAndTime
+      dateTime
           .Hour; // work out the value for the third digit and then display it
   if (firstHourDigit > 12) {
     firstHourDigit = firstHourDigit - 12;
@@ -220,7 +218,7 @@ void displayTheTime() {
   displayNumber(firstHourDigit, DIGIT_3, clockHourColour);
 
   int secondHourDigit =
-      MyDateAndTime
+      dateTime
           .Hour; // work out the value for the fourth digit and then display it
 
   // Comment out the following three lines if you want midnight to be shwon as
